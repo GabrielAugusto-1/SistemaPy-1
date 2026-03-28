@@ -1,11 +1,13 @@
 from flask import Flask
 from clientes import clientes_bp
 from produtos import produtos_bp
+from vendas import vendas_bp
 
 app = Flask(__name__)
 
 app.register_blueprint(clientes_bp)
 app.register_blueprint(produtos_bp)
+app.register_blueprint(vendas_bp)
 
 
 if __name__ == "__main__":
