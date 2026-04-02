@@ -1,7 +1,7 @@
 import psycopg2
 
 conexao = psycopg2.connect(
-    "postgresql://postgres:bielpy_123%40@db.bvlmnebahunftvabjrph.supabase.co:5432/postgres"
+       "postgres://postgres.apbkobhfnmcqqzqeeqss:bielpy_123%40@aws-0-us-east-2.pooler.supabase.com:5432/postgres"
 )
 
 # conexao = psycopg2.connect(
