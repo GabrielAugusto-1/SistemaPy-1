@@ -1,46 +1,37 @@
 from flask import request, jsonify, Blueprint
-
+from db import dbcursor, conexao
 #Flask
 produtos_bp = Blueprint("produtos", __name__)
 
-#Variaveis
-produtos = [
-    {
-    "id":1,
-    "nome": "SSD Nvme 2.0",
-    "preco": 379.99,
-    "estoque": 7,
-    "situacao": True
-},
- {
-    "id":2,
-    "nome": "Caderno Antigonus",
-    "preco": 124999.99,
-    "estoque": 1,
-    "situacao": True
-},
 
- {
-    "id":3,
-    "nome": "Tridente de kavas",
-    "preco": 0,
-    "estoque": 0,
-    "situacao": False
-},
- {
-    "id":4,
-    "nome": "Fome rastejante",
-    "preco": 25000.00,
-    "estoque": 7,
-    "situacao": True
-}]
+#funcoes
+def criarProdutos():
+    dbcursor.execute("Select * from produtos")
+    return dbcursor.fetchall()
+
+#Variaveis
+produtos = []
+
+
+# Açoes
+produto = criarProdutos()
+for p in produto:
+    produtos.append({
+        "id":p[0],
+        "nome":p[1],
+        "preco":p[2],
+        "estoque":p[3],
+        "situacao":p[4]})
+
+def mostrarativos(produtos):
+    return [produto for produto in produtos if produto["situacao"]]
 
 id_prox = 5
-campos_obrigatorios =["nome", "preco" "estoque"]
+campos_obrigatorios =["nome", "preco","estoque"]
 
 @produtos_bp.route("/produtos", methods=["GET"])
 def mostrar_produtos():
-    return [produtos for produtos in produtos if produtos["situacao"]]
+    return [produto for produto in produtos if produto["situacao"]]
 
 @produtos_bp.route("/produtos/todos", methods=["GET"])
 def mostrar_todos_produtos():
@@ -68,18 +59,21 @@ def criar_produto():
     if preco < 0:
         return {"Erro": "O preco deve ser um numero positivo"}, 400
     
-
+    nome = dados["nome"]
+    
+    dbcursor.execute("insert into produtos (nome,preco,estoque,situacao) values (%s,%s,%s,%s)", (nome,preco,estoque,True))
+    
     #colocando produto
-    produto ={
-        "id": id_prox,
-        "nome": dados["nome"],
-        "preco": preco,
-        "estoque": preco,
-        "situacao": dados.get("situacao", True)
-    }
-
-    produtos.append(produto)
-    id_prox += 1
+    # produto ={
+    #     "id": id_prox,
+    #     "nome": dados["nome"],
+    #     "preco": preco,
+    #     "estoque": preco,
+    #     "situacao": dados.get("situacao", True)
+    # }
+    # produtos.append(produto)
+    # id_prox += 1
+    conexao.commit()
     return {"Mensagem": "Criado com sucesso",
             "produto":produto}, 201
 

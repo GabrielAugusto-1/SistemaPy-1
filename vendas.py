@@ -93,7 +93,7 @@ def criar_venda():
     cliente =  next((cliente for cliente in clientes if cliente["id"] == idcliente), None)
     
     if not cliente:
-        return {"Erro": "O id do cliente não pertence a ninguem! O cliente não existe!"},400
+        return {"Erro": "O id do cliente não pertence a ninguem! O cliente não existe!"},404
     
     if not cliente["situacao"]:
         return {"Erro": "Este cliente esta inativo ou foi deletado"}, 400
@@ -129,9 +129,9 @@ def criar_venda():
 
 @vendas_bp.route("/vendas/<int:id>", methods=["GET"])
 def mostrar_vendas_id(id):
-    for venda in vendas:
-        if venda["id"] == id:
-            return venda,200
+    venda = next((venda for venda in vendas if venda["id"] == id))
+    if venda:
+        return venda, 200
         
     return {"Erro": "Venda não existe"}, 404
 
@@ -153,12 +153,17 @@ def deletar_venda_id(id):
             venda["situacao"] = False
 
             return{"Estoque antes": produtoantes["estoque"], "Estoque atualizado": produto["estoque"], "venda": venda},200
+    return {"Erro": "Venda não encontrada"},404
 
 @vendas_bp.route("/vendas/<int:id>", methods=["PUT"])
 def editar_venda(id):
     for venda in vendas:
         if venda["id"] == id:
             vendaantes = venda.copy()
+            produtovenda = next((p for p in produtos if p["id"] == venda["idproduto"]),None)
+            if not produtovenda:
+                return {"Erro": "produto não existe mais, ou ocorreu outro erro. Produtovenda não esta sendo encontrado"},404
+            
             dados = request.json
             if not dados:
                 return {"Erro": "Envie um JSON valido!"},400
@@ -175,17 +180,20 @@ def editar_venda(id):
                 if idproduto <= 0:
                     return {"Erro": "idproduto tem que ser um numero positivo"},400
              
-                novoproduto = next((produto for produto in produtos if produto == idproduto),None)
+                novoproduto = next((produto for produto in produtos if produto["id"] == idproduto),None)
                 if not novoproduto:
                     return {"Erro": "id de produto não encontrado"},404
                 if not novoproduto["situacao"]:
-                    return{"Erro": "Produto inativo"}
+                    return{"Erro": "Produto inativo"},400
                 
                 if not venda["idproduto"] == novoproduto["id"]:
-                    venda["quantidade"] == 0
+                    produtovenda["estoque"] += venda["quantidade"]
+                    venda["quantidade"] = 0
+                    venda["valor_total"] = 0
+                    
 
-                venda["idproduto"] = novoproduto["id"]
-                return{"sucesso": "ateh aqui por enquanto"}
+                venda["idproduto"] = novoproduto["id"]   
+                
               
                 
                 
@@ -193,16 +201,31 @@ def editar_venda(id):
 
             if "quantidade" in dados:
                 try:
-                    quantidade = int(dados["quantidade"])
+                    nova_qtd = int(dados["quantidade"])
                 except ValueError:
                     return {"Erro": "Quantidade não é um numero inteiro"},400
                 
-                if quantidade <= 0:
+                if nova_qtd <= 0:
                     return {"Erro": "Quantidade tem que ser um numero positivo"},400
+
+                produtonovo = next((p for p in produtos if p["id"] == venda["idproduto"]),None)
+                disponivel =    produtonovo["estoque"] + venda["quantidade"]
+                if nova_qtd > disponivel:
+                    return {"Erro": "solicitação invalida, O saldo ultrapassa o estoque", "estoque": produtonovo, "Total disponivel": disponivel},400
                 
-                atualizarEstoque = atualizarvenda(venda, quantidade, vendaantes)
-                novoproduto["estoque"] = atualizarEstoque               
-                
+                if nova_qtd > venda["quantidade"]:
+                    retirar = nova_qtd - venda["quantidade"]
+                    produtonovo["estoque"] -= retirar
+                    venda["quantidade"] = nova_qtd
+
+                elif nova_qtd < venda["quantidade"]:
+                    repor = venda["quantidade"] - nova_qtd
+                    produtonovo["estoque"] += repor
+                    venda["quantidade"] = nova_qtd 
+
+                venda["valor_total"] = produtonovo["preco"] * venda["quantidade"]
+
+
             if "idcliente" in dados:
                 try:
                     idcliente = int(dados["idcliente"])
@@ -218,21 +241,12 @@ def editar_venda(id):
                 
                 if not novocliente["situacao"]:
                     return{"Erro": "Cliente foi deixado como inativo"}, 400
-                
-            atualizacao = {}
-            if idcliente:
-                atualizacao.update({"idcliente": idcliente})
-            if idproduto:
-                atualizacao.update({"idproduto":idproduto})
-            if quantidade:
-                atualizacao.update({"quantidade":quantidade})
-        
-            venda = {
-                **venda,**atualizacao
-            }
+                venda["idcliente"] = idcliente
             
-            return{"venda antes": vendaantes, "venda editada":venda,"produto Antes atualizado:":produtos[vendaantes["idproduto"] - 1]}
-                
+
+            if "idproduto" in dados and "quantidade" in dados:
+                return{"venda antes": vendaantes, "venda editada":venda,"produto Anterior atualizado:":produtovenda, "Produto agora": produtonovo },200
+            return{"venda antes": vendaantes, "venda editada":venda,"produto Anterior atualizado:":produtovenda},200              
 
 
             
