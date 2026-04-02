@@ -1,8 +1,9 @@
 import psycopg2
 
 conexao = psycopg2.connect(
-       "postgres://postgres.apbkobhfnmcqqzqeeqss:bielpy_123%40@aws-0-us-east-2.pooler.supabase.com:5432/postgres"
+   "postgresql://postgres.bvlmnebahunftvabjrph:bielpy_123%40@aws-1-us-east-2.pooler.supabase.com:6543/postgres"
 )
+
 
 # conexao = psycopg2.connect(
 #     host="localhost",
