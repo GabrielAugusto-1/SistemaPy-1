@@ -1,9 +1,7 @@
 def limpar(informacao):
     if informacao is None:
         return None
-
-    else:
-        return str(informacao).strip() or None
+    return str(informacao).strip() or None
 
 
 
