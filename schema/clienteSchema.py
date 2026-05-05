@@ -1,4 +1,4 @@
-from .utilsSchema import limpar
+from .schemaUtils import limpar
 
 class ClienteCreateSchema:
    
