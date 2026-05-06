@@ -10,9 +10,13 @@ def mostrar_cliente():
     return cliente, 200
 
 
-@clientes_bp.route("/<int:id>" methods=["GET"])
+@clientes_bp.route("/<int:id>", methods=["GET"])
 def mostrar_clienteId(id):
-    cliente
+    cliente = ClienteService.listar_cliente_por_id(id)
+    if cliente:
+        return cliente, 200
+    return {"Erro": "Cliente não existe"},404
+
 
 @clientes_bp.route("/", methods=["POST"])
 def criar_cliente():
@@ -36,6 +40,45 @@ def criar_cliente():
     except Exception as e:
         return {"Erro": str(e)},500
     
+
+@clientes_bp("/<int:id>",methods=["PUT"])
+def atualizarClientecompleto():
+    dados = request.json
+    if not dados:
+        return {"Erro": "Json invalido!"}
     
+    schema = ClienteCreateSchema(dados)
+    if not schema.eh_valido():
+        return {"Erros":schema.erros},400
+    
+    ClienteService.atualizarClientecompleto(id, { "nome":schema.nome, "email":schema.email,"senha":schema.senha})
+    
+    return {"mensagem": "Atualizado com sucesso"}, 200
 
     
+    
+
+    # def atualizar_cliente(id, dados):
+    # campos = []
+    # valores = []
+
+    # if "nome" in dados:
+    #     campos.append("nome=%s")
+    #     valores.append(dados["nome"])
+
+    # if "email" in dados:
+    #     campos.append("email=%s")
+    #     valores.append(dados["email"])
+
+    # if "situacao" in dados:
+    #     campos.append("situacao=%s")
+    #     valores.append(dados["situacao"])
+
+    # if not campos:
+    #     return
+
+    # valores.append(id)
+
+    # sql = f"UPDATE Clientes SET {', '.join(campos)} WHERE id=%s"
+    # dbcursor.execute(sql, tuple(valores))
+    # db.commit()
