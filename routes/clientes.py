@@ -9,6 +9,10 @@ def mostrar_cliente():
     cliente = ClienteService.listar_cliente_ativos()
     return cliente, 200
 
+@clientes_bp.route("/todos", methods=["GET"])
+def mostrar_cliente_todas():
+    cliente = ClienteService.listar_cliente_todos()
+    return cliente, 200
 
 @clientes_bp.route("/<int:id>", methods=["GET"])
 def mostrar_clienteId(id):
@@ -41,8 +45,8 @@ def criar_cliente():
         return {"Erro": str(e)},500
     
 
-@clientes_bp("/<int:id>",methods=["PUT"])
-def atualizarClientecompleto():
+@clientes_bp.route("/<int:id>",methods=["PUT"])
+def atualizarClientecompleto(id):
     dados = request.json
     if not dados:
         return {"Erro": "Json invalido!"}
@@ -51,11 +55,12 @@ def atualizarClientecompleto():
     if not schema.eh_valido():
         return {"Erros":schema.erros},400
     
-    ClienteService.atualizarClientecompleto(id, { "nome":schema.nome, "email":schema.email,"senha":schema.senha})
+    certo = ClienteService.atualizarClienteCompleto(id, { "nome":schema.nome, "email":schema.email,"senha":schema.senha})
+    if certo:
+        return {"mensagem": "Atualizado com sucesso"}, 200
+    return {"Erro": "Cliente não encontrado"},404
     
-    return {"mensagem": "Atualizado com sucesso"}, 200
 
-    
     
 
     # def atualizar_cliente(id, dados):
