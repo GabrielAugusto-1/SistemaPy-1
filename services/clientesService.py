@@ -49,6 +49,45 @@ insert into clientes (nome, email, senha, situacao) values (%s, %s, %s, %s) retu
 
 
     @staticmethod
-    def atualizarClienteCompleto(id, dados):
-        dbcursor.execute("update set nome=%s, email=%s, senha=%s where id =%s", (dados["nome"],dados["email"],dados["senha"], id))
-        
+    def atualizarClienteCompleto(cliente_id, dados):
+        dbcursor.execute("update clientes set nome=%s, email=%s, senha=%s where id =%s", (dados["nome"],dados["email"],dados["senha"], cliente_id))
+        conexao.commit()
+
+        return dbcursor.rowcount
+    
+    @staticmethod
+    def InativarCliente(cliente_id):
+        dbcursor.execute("update clientes set situacao=%s where id=%s", (False,cliente_id,) )
+        conexao.commit()
+
+        return dbcursor.rowcount
+
+    @staticmethod
+    def ativarCliente(cliente_id):
+        dbcursor.execute("update clientes set situacao=%s where id=%s", (True,cliente_id,) )
+        conexao.commit()
+
+        return dbcursor.rowcount
+    
+    @staticmethod
+    def atualizar_cliente(cliente_id, dados):
+
+        campos = []
+        valores = []
+
+        for campo, valor in dados.items():
+            campos.append(f"{campo}=%s")
+            valores.append(valor)
+
+        valores.append(cliente_id)
+
+        sql = f"""
+            UPDATE clientes
+            SET {", ".join(campos)}
+            WHERE id=%s
+        """
+
+        dbcursor.execute(sql, tuple(valores))
+        conexao.commit()
+
+        return dbcursor.rowcount
