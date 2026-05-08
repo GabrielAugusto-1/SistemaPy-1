@@ -1,4 +1,4 @@
-from .schemaUtils import limpar
+from utils import limpar
 
 class ClienteCreateSchema:
    
@@ -54,8 +54,32 @@ class ClienteCreateSchema:
 
 
 
+class ClienteUpdateSchema:
+    def __init__(self, dados):
+        self.erros = []
+        self.dados = {}
+
+        campos_validos = ["nome","email", "senha"]
 
 
+        for campo, valor in dados.items():
+            if campo not in campos_validos:
+                self.erros.append({f"Campo invalido {campo}"})
+
+            if campo in ["nome", "email", "senha"]:
+                valor = limpar(valor)
+
+            self.dados[campo] = valor
+        self.validar()
+    
+    def validar(self):
+        if "email" in self.dados.items():
+            if "@" in self.dados["email"]:
+                self.erros.append("Erro: Email invalido sem '@'")
+    
+    def eh_valido(self):
+        return self.erros == 0
+        
 
 # class ClienteCreateSchema:
 
