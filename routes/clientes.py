@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from services import ClienteService
-from schema import ClienteCreateSchema
+from schema import ClienteCreateSchema, ClienteUpdatePartialSchema
 from database import conexao
 
 clientes_bp = Blueprint("clientes", __name__, url_prefix="/clientes" )
@@ -63,7 +63,6 @@ def atualizarClientecompleto(cliente_id):
         return{"Erro": "Usuario não encotrado"},404
     return {"mensagem": f"Atualizado com sucesso: {atualizados}"}, 200
 
-@clientes_bp.route("/<int:cliente_id>", methods=["PATCH"])
 
 @clientes_bp.route("/<int:cliente_id>", methods=["DELETE"])
 def inativarCliente(cliente_id):
@@ -94,6 +93,14 @@ def atualizarClienteParcial(cliente_id):
     dados = request.json
     if not dados:
         return {"Erro": "JSON invalido!"}
+    schema = ClienteUpdatePartialSchema(dados)
+
+    if not schema.eh_valido():
+        return {"erros": str(schema.erros())}
+    
+    cliente = ClienteService.atualizarClienteParcial(cliente_id, schema)
+    
+    
 
 
 
