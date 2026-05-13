@@ -70,7 +70,7 @@ insert into clientes (nome, email, senha, situacao) values (%s, %s, %s, %s) retu
         return dbcursor.rowcount
     
     @staticmethod
-    def atualizar_cliente(cliente_id, dados):
+    def atualizarClienteParcial(cliente_id, dados):
 
         campos = []
         valores = []
