@@ -54,7 +54,7 @@ class ClienteCreateSchema:
 
 
 
-class ClienteUpdateSchema:
+class ClienteUpdatePartialSchema:
     def __init__(self, dados):
         self.erros = []
         self.dados = {}

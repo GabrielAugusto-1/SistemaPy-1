@@ -1,1 +1,2 @@
 from .clienteSchema import ClienteCreateSchema
+from .clienteSchema import ClienteUpdatePartialSchema
